@@ -270,6 +270,8 @@ endfun
 
 
 fun! vm#commands#find_all(visual, whole) abort
+    silent doautocmd <nomodeline> User visual_multi_before_find
+
     " Find all words under cursor or occurrences of visual selection.
     call s:init(a:whole, 0, 1)
 
@@ -292,7 +294,11 @@ fun! vm#commands#find_all(visual, whole) abort
     call s:G.get_all_regions()
 
     let s:v.restore_scroll = 1
-    return s:G.update_map_and_select_region(pos)
+    let res =  s:G.update_map_and_select_region(pos)
+
+    silent doautocmd <nomodeline> User visual_multi_after_find
+
+    return res
 endfun
 
 
