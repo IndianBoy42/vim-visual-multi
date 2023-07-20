@@ -106,11 +106,13 @@ endfun
 fun! vm#operators#after_yank() abort
     "find operator
     if g:Vm.finding
+        silent doautocmd <nomodeline> User visual_multi_before_find
         let g:Vm.finding = 0
         call vm#operators#find(0, s:v.visual_regex)
         let s:v.visual_regex = 0
         call s:old_updatetime()
         nmap <silent> <nowait> <buffer> y <Plug>(VM-Yank)
+        silent doautocmd <nomodeline> User visual_multi_after_find
     endif
 endfun
 
