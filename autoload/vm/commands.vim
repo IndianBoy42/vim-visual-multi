@@ -131,9 +131,9 @@ fun! vm#commands#add_cursor_up(extend, count) abort
 endfun
 
 
-fun! vm#commands#add_cursor_at_word(yank, search) abort
+fun! vm#commands#add_cursor_at_word(whole, yank, search) abort
     " Add a pattern for current word, place cursor at word begin.
-    call s:init(0, 1, 0)
+    call s:init(a:whole, 1, 0)
 
     if a:yank
         keepjumps normal! viwy`[
@@ -149,9 +149,10 @@ endfun
 " Find by regex
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-fun! vm#commands#find_by_regex(mode) abort
+fun! vm#commands#find_by_regex(extend, mode, ...) abort
+    let regex_backup = empty(@/) ? '\%^' : @/
     " Entry point for VM regex search.
-    if !g:Vm.buffer | call s:init(0, 2, 1) | endif
+    if !g:Vm.buffer | call s:init(0, 2, a:extend) | endif
     let s:v.using_regex = a:mode
     let s:v.regex_backup = empty(@/) ? '\%^' : @/
 
@@ -166,6 +167,21 @@ fun! vm#commands#find_by_regex(mode) abort
     cnoremap <silent> <buffer> <cr>  <cr>:call vm#commands#regex_done()<cr>
     cnoremap <silent><nowait><buffer> <esc><esc> <C-u><C-r>=b:VM_Selection.Vars.regex_backup<cr><esc>:call vm#commands#regex_abort()<cr>
     cnoremap <silent><nowait><buffer> <esc>      <C-u><C-r>=b:VM_Selection.Vars.regex_backup<cr><esc>:call vm#commands#regex_abort()<cr>
+
+    " If pattern is non-nil then immediately use the pattern
+    if a:0
+        if !empty(a:1)
+            let @/ = a:1
+            call vm#commands#regex_done()
+            return ''
+        " or if it is an empty string then use the search register
+        elseif a:1 == ''
+            let @/ = regex_backup
+            call vm#commands#regex_done()
+            return ''
+        endif
+    endif
+
     call s:F.special_statusline('VM-REGEX')
     return '/'
 endfun
@@ -196,7 +212,7 @@ fun! vm#commands#regex_done() abort
     if s:X()
         call s:G.new_region()
     else
-        call vm#commands#add_cursor_at_word(0, 0)
+        call vm#commands#add_cursor_at_word(0, 0, 0)
     endif
 endfun
 
@@ -240,7 +256,7 @@ fun! vm#commands#ctrln(count) abort
         call s:G.update_and_select_region(pos)
     else
         for i in range(a:count)
-            call vm#commands#find_under(0, 1, 1)
+            call vm#commands#find_under(1, 0, 1, 1)
             if no_reselect && s:v.was_region_at_pos
                 break
             endif
@@ -248,10 +264,9 @@ fun! vm#commands#ctrln(count) abort
     endif
 endfun
 
-
-fun! vm#commands#find_under(visual, whole, ...) abort
+fun! vm#commands#find_under(extend, visual, whole, ...) abort
     " Generic command that adds word under cursor. Used by C-N and variations.
-    call s:init(a:whole, 0, 1)
+    call s:init(a:whole, 0, a:extend)
 
     "Ctrl-N command
     if a:0 && s:is_r() | return vm#commands#find_next(0, 0) | endif
@@ -263,9 +278,13 @@ fun! vm#commands#find_under(visual, whole, ...) abort
     if s:is_r() | call s:G.region_at_pos().remove() | endif
 
     call s:Search.add()
-    let R = s:G.new_region()
-    call s:G.check_mutliline(0, R)
-    return (a:0 && a:visual)? s:G.region_at_pos() : s:G.merge_overlapping(R)
+    if a:extend
+        let R = s:G.new_region()
+        call s:G.check_mutliline(0, R)
+        return (a:0 && a:visual)? s:G.region_at_pos() : s:G.merge_overlapping(R)
+    else
+        let R = s:G.new_cursor()
+    endif
 endfun
 
 
@@ -281,11 +300,11 @@ fun! vm#commands#find_all(visual, whole) abort
     if !a:visual
         let R = s:G.region_at_pos()
         if empty(R)
-            let R = vm#commands#find_under(0, a:whole)
+            let R = vm#commands#find_under(1, 0, a:whole)
         endif
         call s:Search.update_patterns(R.pat)
     else
-        let R = vm#commands#find_under(1, a:whole)
+        let R = vm#commands#find_under(1, 1, a:whole)
     endif
 
     call s:Search.join()
@@ -339,7 +358,7 @@ fun! s:get_next() abort
         return s:G.new_region()
     else
         silent keepjumps normal! ngny`[
-        return vm#commands#add_cursor_at_word(0, 0)
+        return vm#commands#add_cursor_at_word(0, 0, 0)
     endif
 endfun
 
@@ -350,7 +369,7 @@ fun! s:get_prev() abort
         return s:G.new_region()
     else
         silent keepjumps normal! NgNy`[
-        return vm#commands#add_cursor_at_word(0, 0)
+        return vm#commands#add_cursor_at_word(0, 0, 0)
     endif
 endfun
 

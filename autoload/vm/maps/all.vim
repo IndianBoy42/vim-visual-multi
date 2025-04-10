@@ -18,6 +18,7 @@ let s:base = {
       \"Select All":              ['', 'n'],
       \"Add Cursor Down":         ['', 'n'],
       \"Add Cursor Up":           ['', 'n'],
+      \"Find Regex":              ['', 'x'],
       \"Visual Regex":            ['', 'x'],
       \"Visual All":              ['', 'x'],
       \"Visual Add":              ['', 'x'],
@@ -53,6 +54,7 @@ fun! vm#maps#all#permanent() abort
   if g:VM_default_mappings
     let maps["Reselect Last"][0]         = leader.'gS'
     let maps["Add Cursor At Pos"][0]     = leader.'\'
+    let maps["Find Regex"][0]            = leader.'n'
     let maps["Start Regex Search"][0]    = leader.'/'
     let maps["Select All"][0]            = leader.'A'
     let maps["Add Cursor Down"][0]       = '<C-Down>'

@@ -7,7 +7,8 @@ fun! vm#plugs#permanent() abort
   xmap <expr><silent>     <Plug>(VM-Visual-Find)             vm#operators#find(1, 1)
 
   nnoremap <silent>       <Plug>(VM-Add-Cursor-At-Pos)       :call vm#commands#add_cursor_at_pos(0)<cr>
-  nnoremap <silent>       <Plug>(VM-Add-Cursor-At-Word)      :call vm#commands#add_cursor_at_word(1, 1)<cr>
+  nnoremap <silent>       <Plug>(VM-Add-Cursor-At-Word)      :call vm#commands#add_cursor_at_word(1, 1, 1)<cr>
+  xnoremap <silent><expr> <Plug>(VM-Add-Cursor-At-SubWord)   <sid>Visual('cursor')
   nnoremap <silent>       <Plug>(VM-Add-Cursor-Down)         :<C-u>call vm#commands#add_cursor_down(0, v:count1)<cr>
   nnoremap <silent>       <Plug>(VM-Add-Cursor-Up)           :<C-u>call vm#commands#add_cursor_up(0, v:count1)<cr>
   nnoremap <silent>       <Plug>(VM-Select-Cursor-Down)      :<C-u>call vm#commands#add_cursor_down(1, v:count1)<cr>
@@ -23,9 +24,12 @@ fun! vm#plugs#permanent() abort
   nnoremap <silent>       <Plug>(VM-Find-Under)              :<c-u>call vm#commands#ctrln(v:count1)<cr>
   xnoremap <silent><expr> <Plug>(VM-Find-Subword-Under)      <sid>Visual('under')
 
-  nnoremap <silent>       <Plug>(VM-Start-Regex-Search)      @=vm#commands#find_by_regex(1)<cr>
-  nnoremap <silent>       <Plug>(VM-Slash-Search)            @=vm#commands#find_by_regex(3)<cr>
-  xnoremap <silent>       <Plug>(VM-Visual-Regex)            :call vm#commands#find_by_regex(2)<cr>:call feedkeys('/', 'n')<cr>
+  nnoremap <silent>       <Plug>(VM-Start-Regex-Search)      @=vm#commands#find_by_regex(1, 1)<cr>
+  nnoremap <silent>       <Plug>(VM-Add-Cursor-At-Search)    @=vm#commands#find_by_regex(0, 1)<cr>
+  nnoremap <silent>       <Plug>(VM-Find-Regex)              @=vm#commands#find_by_regex(1, 1, '')<cr>
+  nnoremap <silent>       <Plug>(VM-Add-Cursor-At-Match)     @=vm#commands#find_by_regex(0, 1, '')<cr>
+  nnoremap <silent>       <Plug>(VM-Slash-Search)            @=vm#commands#find_by_regex(1, 3)<cr>
+  xnoremap <silent>       <Plug>(VM-Visual-Regex)            :call vm#commands#find_by_regex(1, 2)<cr>:call feedkeys('/', 'n')<cr>
 
   nnoremap <silent>       <Plug>(VM-Left-Mouse)              <LeftMouse>
   nmap     <silent>       <Plug>(VM-Mouse-Cursor)            <Plug>(VM-Left-Mouse)<Plug>(VM-Add-Cursor-At-Pos)
@@ -365,7 +369,9 @@ fun! s:Visual(cmd) abort
   endif
   return a:cmd == 'all'
         \ ? "y:call vm#commands#find_all(1, 0)\<cr>".r."`]"
-        \ : "y:call vm#commands#find_under(1, 0)\<cr>".r."`]"
+        \ : a:cmd == 'under'
+        \ ? "y:call vm#commands#find_under(1, 1, 0)\<cr>".r."`]"
+        \ : "y:call vm#commands#find_under(1, 1, 0)\<cr>".r."`]"
 endfun
 
 
