@@ -169,6 +169,7 @@ fun! vm#commands#find_by_regex(extend, mode, ...) abort
     cnoremap <silent><nowait><buffer> <esc>      <C-u><C-r>=b:VM_Selection.Vars.regex_backup<cr><esc>:call vm#commands#regex_abort()<cr>
 
     " If pattern is non-nil then immediately use the pattern
+    let s:v.manual_regex = 0
     if a:0
         if !empty(a:1)
             let @/ = a:1
@@ -183,6 +184,7 @@ fun! vm#commands#find_by_regex(extend, mode, ...) abort
     endif
 
     call s:F.special_statusline('VM-REGEX')
+    let s:v.manual_regex = 1
     return '/'
 endfun
 
@@ -213,6 +215,10 @@ fun! vm#commands#regex_done() abort
         call s:G.new_region()
     else
         call vm#commands#add_cursor_at_word(0, 0, 0)
+    endif
+
+    if s:v.manual_regex
+        silent doautocmd <nomodeline> User visual_multi_after_regex
     endif
 endfun
 

@@ -66,6 +66,13 @@ If you need to perform some action before/after `each` VM command is run: >
   autocmd User visual_multi_before_cmd   call MyFunc1()
   autocmd User visual_multi_after_cmd    call MyFunc2()
 
+If you need to perform some action before/after a find operation: >
+  autocmd User visual_multi_before_find   call MyFunc1()
+  autocmd User visual_multi_after_find    call MyFunc2()
+
+If you need to perform some action after a regex search:
+  autocmd User visual_multi_after_regex   call MyFunc2()
+
 -------------------------------------------------------------------------------
                                                                  *vm-faq-remap*
 How can I remap x in VM? ~
