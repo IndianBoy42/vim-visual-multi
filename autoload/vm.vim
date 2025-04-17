@@ -118,9 +118,10 @@ endfun
 
 fun! s:enable_hls()
     if mode(1) == 'n'
-        call feedkeys("\<Plug>(VM-Hls)")
+        " call feedkeys("\<Plug>(VM-Hls)")
+        set hls
     else
-        call timer_start(50, { t -> s:enable_hls() })
+        call timer_start(1, { t -> s:enable_hls() })
     endif
 endfun
 
